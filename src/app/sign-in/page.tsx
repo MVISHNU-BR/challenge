@@ -3,7 +3,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import loginImage from "@/assets/login-img.png";
 import { z } from "zod";
-
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import { postLogin } from "@/services/authService";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,17 +19,19 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import Link from "next/link";
 
 const FormSchema = z.object({
-  email: z.string().email({
-    message: "Enter a valid email.",
+  email: z.string().trim().email({
+    message: "Digite um email valido.",
   }),
   password: z.string().min(6, {
-    message: "Password must be at least 6 characters long.",
+    message: "Senha precisa de mais do que 6 caracteres.",
   }),
 });
 
-export default function LoginForm() {
+export default function SignIn() {
+  const router = useRouter();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -35,22 +40,30 @@ export default function LoginForm() {
     },
   });
 
+  const loginMutation = useMutation({
+    mutationFn: postLogin,
+    onSuccess: (data) => {
+      toast.success("Login feito com sucesso!");
+      Cookies.set("token", data.accessToken, { expires: 7 });
+      router.push("/dashboard");
+    },
+    onError: () => {
+      toast.error("Falha no login.");
+    },
+  });
+
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    if (data.email === "user@example.com" && data.password === "password123") {
-      toast.success("Login successful!");
-    } else {
-      toast.error("Login failed. Please check your credentials.");
-    }
+    loginMutation.mutate(data);
   }
 
   return (
     <div className="flex justify-center items-center h-screen bg-[linear-gradient(180deg,_rgba(241,241,241,1)_50%,_rgba(226,54,54,1)_50%)] px-5">
-      <div className="md:flex justify-center max-w-[925px] w-full bg-white rounded-2xl ">
-        <div className="">
+      <div className="flex items-center justify-center max-w-[925px] w-full bg-white rounded-2xl ">
+        <div className="hidden sm:block">
           <Image src={loginImage} width={484} height={484} alt="login image" />
         </div>
 
-        <div className=" flex flex-col p-5 justify-center md:max-w-[400px] w-full ">
+        <div className=" flex flex-col p-5 justify-center md:max-w-[400px] w-full">
           <h1 className="text-3xl">Login</h1>
           <Form {...form}>
             <form
@@ -64,7 +77,7 @@ export default function LoginForm() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your email" {...field} />
+                      <Input placeholder="Digite seu email" {...field} />
                     </FormControl>
                     {formState.errors.email && (
                       <FormMessage>
@@ -79,11 +92,11 @@ export default function LoginForm() {
                 name="password"
                 render={({ field, formState }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>Senha</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="Enter your password"
+                        placeholder="Digite sua senha"
                         {...field}
                       />
                     </FormControl>
@@ -95,7 +108,15 @@ export default function LoginForm() {
                   </FormItem>
                 )}
               />
-              <Button type="submit">Login</Button>
+              <div className="flex items-center justify-between">
+                <Button type="submit">Login</Button>
+                <Link
+                  href={"/sign-up"}
+                  className="text-center hover:text-blue-400 hover:underline"
+                >
+                  Cadastre-se
+                </Link>
+              </div>
             </form>
           </Form>
         </div>
