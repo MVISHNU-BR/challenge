@@ -25,8 +25,8 @@ const FormSchema = z.object({
   email: z.string().trim().email({
     message: "Digite um email valido.",
   }),
-  password: z.string().min(6, {
-    message: "Senha precisa de mais do que 6 caracteres.",
+  password: z.string().min(8, {
+    message: "Senha precisa de mais do que 8 caracteres.",
   }),
 });
 
