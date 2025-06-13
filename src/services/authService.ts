@@ -1,7 +1,9 @@
 import { user } from "@/components/userTable";
+const baseUrl = process.env.NEXT_PUBLIC_CONNECTION_STRING;
 
 export async function postLogin(data: { email: string; password: string }) {
-  const response = await fetch("http://localhost:3001/login", {
+  console.log(baseUrl);
+  const response = await fetch(`${baseUrl}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -14,7 +16,8 @@ export async function postLogin(data: { email: string; password: string }) {
 }
 
 export async function postregister(data: user) {
-  const response = await fetch("http://localhost:3001/users", {
+  console.log(`${baseUrl}/users`);
+  const response = await fetch(`${baseUrl}/users`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
